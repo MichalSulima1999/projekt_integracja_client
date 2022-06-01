@@ -6,8 +6,11 @@ import useAuth from "../../hooks/useAuth";
 import { XMLParser } from "fast-xml-parser";
 import CpuTable from "./CpuTable";
 import CpuDatePlot from "./CpuDatePlot";
+import { Link } from "react-router-dom";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const ShowCpus = () => {
+  const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
   const [cpus, setCpus] = useState([]);
   const xml = `<?xml version="1.0" encoding="utf-8"?>
@@ -21,6 +24,17 @@ const ShowCpus = () => {
   useEffect(() => {
     getCpus();
   }, []);
+
+  const handleDownloadJson = async () => {
+    await axiosPrivate.get("/cpu/download/json").then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'file.json'); //or any other extension
+      document.body.appendChild(link);
+      link.click();
+  });
+  }
 
   const getCpus = async () => {
     const { response } = await easySoapRequest({
@@ -45,6 +59,8 @@ const ShowCpus = () => {
     <div>
       <CpuTable data={cpus} />
       <CpuDatePlot data={cpus} />
+      <Link to="/showCpuChart" className="btn btn-primary">Show comparison chart</Link>
+      <button onClick={handleDownloadJson}>Download json</button>
     </div>
   );
 };
