@@ -10,7 +10,7 @@ function Home() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h1>Strona główna</h1>
+      <h1>Welcome</h1>
     </motion.div>
   );
 }

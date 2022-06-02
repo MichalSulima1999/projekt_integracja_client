@@ -13,6 +13,7 @@ const ShowCpus = () => {
   const axiosPrivate = useAxiosPrivate();
   const { auth } = useAuth();
   const [cpus, setCpus] = useState([]);
+
   const xml = `<?xml version="1.0" encoding="utf-8"?>
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                     xmlns:std="http://integracja.pl/soap">
@@ -25,16 +26,18 @@ const ShowCpus = () => {
     getCpus();
   }, []);
 
-  const handleDownloadJson = async () => {
-    await axiosPrivate.get("/cpu/download/json").then((response) => {
+  const handleDownloadFile = async (fileExtension) => {
+    await axiosPrivate.get(`/cpu/download/${fileExtension}`, {responseType: 'blob'}).then((response) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'file.json'); //or any other extension
+      link.setAttribute('download', 'cpus.' + fileExtension); //or any other extension
       document.body.appendChild(link);
       link.click();
   });
   }
+
+  
 
   const getCpus = async () => {
     const { response } = await easySoapRequest({
@@ -57,11 +60,15 @@ const ShowCpus = () => {
 
   return (
     <div>
+      <div class="d-flex justify-content-between mt-2">
+      <button onClick={() => handleDownloadFile("json")} className="btn btn-primary">Download json</button>
+      <Link to="/showCpuChart" className="btn btn-secondary">Show comparison chart</Link>
+      <button onClick={() => handleDownloadFile("xml")} className="btn btn-primary">Download xml</button>
+      </div>
       <CpuTable data={cpus} />
-      <CpuDatePlot data={cpus} />
-      <Link to="/showCpuChart" className="btn btn-primary">Show comparison chart</Link>
-      <button onClick={handleDownloadJson}>Download json</button>
+      <CpuDatePlot data={cpus} />       
     </div>
+    
   );
 };
 
